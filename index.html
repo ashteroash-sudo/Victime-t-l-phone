@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preuve numérique — téléphone de Lauren Ashby</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* =====================================================================
+   CONFIGURATION — à modifier entre les sessions
+   ===================================================================== */
+:root{
+  --bg: #0b0d10;
+  --ink-soft: #8b939a;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:#e7e9ea;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:26px 14px 50px;
+}
+.label{
+  font-size:0.8rem;
+  color:var(--ink-soft);
+  margin-bottom:16px;
+  text-align:center;
+}
+
+.phone-wrap{
+  position:relative;
+  width:100%;
+  max-width:400px;
+}
+.phone-wrap img{
+  display:block;
+  width:100%;
+  height:auto;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+/* zone cliquable du bouton marche/arrêt, calée sur la photo */
+.power-hit{
+  position:absolute;
+  left:79.3%;
+  top:27.6%;
+  width:2.1%;
+  height:8.2%;
+  cursor:pointer;
+}
+
+/* zone qui reproduit l'écran, calée sur la photo */
+.screen{
+  position:absolute;
+  left:22.3%;
+  top:12.7%;
+  width:54.7%;
+  height:65.1%;
+  border-radius:6% / 3%;
+  overflow:hidden;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.boot-logo{
+  opacity:0;
+  transition:opacity .6s ease;
+  text-align:center;
+  font-size:4.2vw;
+  max-font-size:16px;
+}
+.boot-logo.show{ opacity:1; }
+.boot-logo .ring{
+  width:9vw; height:9vw;
+  max-width:34px; max-height:34px;
+  border-radius:50%;
+  border:2.5px solid #3a3d3f;
+  border-top-color:#eee;
+  margin:0 auto 10px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.lock-screen{
+  display:none;
+  width:100%; height:100%;
+  flex-direction:column;
+  align-items:center;
+  padding-top:9%;
+  position:relative;
+  box-sizing:border-box;
+}
+.lock-screen.show{ display:flex; }
+.bypass-zone{
+  position:absolute;
+  top:0; right:0;
+  width:34%;
+  height:16%;
+  cursor:pointer;
+}
+.lock-time{ font-size:6.5vw; font-weight:300; line-height:1; }
+.lock-date{ font-size:2vw; color:#aaa; margin:4px 0 5%; }
+.pin-dots{ display:flex; gap:3.5%; margin-bottom:5%; height:1.6vw; }
+.pin-dot{ width:1.6vw; height:1.6vw; max-width:9px; max-height:9px; border-radius:50%; border:1.2px solid #999; }
+.pin-dot.filled{ background:#fff; border-color:#fff; }
+.pin-error{ font-size:2vw; color:#e07070; height:2.4vw; margin-bottom:2%; }
+.keypad{ display:grid; grid-template-columns:repeat(3,15%); gap:4%; }
+.key{
+  width:15%; aspect-ratio:1/1; border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  color:#fff; font-size:3vw;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; user-select:none;
+}
+.key:hover{ background:rgba(255,255,255,0.16); }
+.key.wide{ background:none; cursor:default; }
+
+.shake{ animation: shakeAnim .35s ease; }
+@keyframes shakeAnim{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-3%); }
+  75%{ transform:translateX(3%); }
+}
+
+.unlocked-screen{
+  display:none;
+  width:100%; height:100%;
+  overflow-y:auto;
+  padding:6% 5%;
+  box-sizing:border-box;
+}
+.unlocked-screen.show{ display:block; }
+.app-logo{
+  text-align:center;
+  font-size:6.5vw;
+  font-weight:800;
+  letter-spacing:0.02em;
+  background:linear-gradient(90deg,#ff5f7e,#8b5cf6);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  margin-bottom:1%;
+}
+.app-sub{ text-align:center; font-size:2.3vw; color:#999; margin-bottom:5%; }
+.chat-thread{ display:flex; flex-direction:column; gap:3%; margin-bottom:5%; }
+.bubble{
+  max-width:78%;
+  padding:2.6% 3.6%;
+  border-radius:14px;
+  font-size:2.6vw;
+  line-height:1.4;
+}
+.bubble.them{ background:#2a2c2e; color:#eee; align-self:flex-start; border-bottom-left-radius:3px; }
+.bubble.me{ background:linear-gradient(90deg,#ff5f7e,#8b5cf6); color:#fff; align-self:flex-end; border-bottom-right-radius:3px; }
+
+.selfie-slot{
+  width:100%;
+  aspect-ratio:4/5;
+  background:#1a1b1c;
+  border:1px dashed #555;
+  color:#888;
+  font-size:2.1vw;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  padding:4%;
+  margin-bottom:5%;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.selfie-slot img{ width:100%; height:100%; object-fit:cover; }
+
+.qr-row{ display:flex; flex-direction:column; align-items:center; gap:2%; padding-top:3%; border-top:1px solid #2a2c2e; }
+#qrcode{ background:#fff; padding:4%; }
+.qr-url{ font-size:1.9vw; color:#999; word-break:break-all; text-align:center; }
+
+.controls{
+  margin-top:22px;
+  display:flex;
+  gap:10px;
+}
+.reset-btn{
+  background:none;
+  border:1px solid #3a3d3f;
+  color:var(--ink-soft);
+  padding:8px 14px;
+  cursor:pointer;
+  font-size:0.82rem;
+  border-radius:4px;
+}
+.reset-btn:hover{ border-color:#6a6d6f; }
+</style>
+</head>
+<body>
+
+<div class="label">Preuve numérique — CCME-2026-0347 — téléphone retrouvé sur les lieux</div>
+
+<div class="phone-wrap">
+  <img src="telephone.png" alt="Téléphone de la victime">
+
+  <div class="power-hit" id="powerBtn" title="Bouton marche/arrêt"></div>
+
+  <div class="screen" id="screen">
+
+    <div class="boot-logo" id="bootLogo">
+      <div class="ring"></div>
+      <div>ORION</div>
+    </div>
+
+    <div class="lock-screen" id="lockScreen">
+      <div class="bypass-zone" id="bypassZone"></div>
+      <div class="lock-time">21:47</div>
+      <div class="lock-date">Dimanche 5 mai</div>
+      <div class="pin-dots" id="pinDots"></div>
+      <div class="pin-error" id="pinError"></div>
+      <div class="keypad" id="keypad"></div>
+    </div>
+
+    <div class="unlocked-screen" id="unlockedScreen">
+      <div class="app-logo" id="appLogoText">Nocturne</div>
+      <div class="app-sub">Conversation — il y a 2 jours</div>
+      <div class="chat-thread">
+        <div class="bubble them">J'ai consulté ton profil, tu me plais.</div>
+        <div class="bubble them">Ça te dit qu'on se voie ce soir ? J'ai envie de toi.</div>
+        <div class="bubble me">Haha, direct dis donc... pourquoi pas 😏</div>
+        <div class="bubble them">J'aime les lieux publics, c'est plus sûr. Et si ça colle entre nous... je te promets que je ne suis pas timide, plutôt ouverte à tout.</div>
+      </div>
+      <div class="selfie-slot" id="selfieSlot">
+        Dépose un fichier <b>selfie.jpg</b> à côté de index.html — il s'affiche ici automatiquement.
+      </div>
+      <div class="qr-row">
+        <div id="qrcode"></div>
+        <div class="qr-url" id="qrUrlText"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button class="reset-btn" onclick="resetPhone()">Réinitialiser le téléphone</button>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — à modifier entre les sessions
+   ===================================================================== */
+const PHONE_PIN = "1957";              // code trouvé sur le papier plié dans le sac
+const BYPASS_CLICKS_NEEDED = 3;        // nombre de clics sur la zone cachée (coin haut-droit de l'écran) pour bypasser
+const APP_NAME = "Nocturne";           // nom de l'appli de rencontre
+const APP_URL = "https://nocturne-app.vercel.app"; // à remplacer une fois le site de l'appli déployé
+
+let pinEntry = "";
+let bypassClicks = 0;
+let phoneUnlocked = false;
+
+function renderKeypad(){
+  const keys = ["1","2","3","4","5","6","7","8","9","","0","⌫"];
+  const keypad = document.getElementById('keypad');
+  keypad.innerHTML = keys.map(k => {
+    if(k === "") return `<div class="key wide"></div>`;
+    return `<div class="key" onclick="pressKey('${k}')">${k}</div>`;
+  }).join('');
+}
+renderKeypad();
+
+function renderPinDots(){
+  const dots = document.getElementById('pinDots');
+  dots.innerHTML = "";
+  for(let i=0;i<4;i++){
+    const d = document.createElement('div');
+    d.className = "pin-dot" + (i < pinEntry.length ? " filled" : "");
+    dots.appendChild(d);
+  }
+}
+renderPinDots();
+
+function pressKey(k){
+  if(phoneUnlocked) return;
+  if(k === "⌫"){
+    pinEntry = pinEntry.slice(0,-1);
+    renderPinDots();
+    return;
+  }
+  if(pinEntry.length >= 4) return;
+  pinEntry += k;
+  renderPinDots();
+  if(pinEntry.length === 4){
+    if(pinEntry === PHONE_PIN){
+      unlockPhone();
+    } else {
+      const screen = document.getElementById('screen');
+      screen.classList.add('shake');
+      document.getElementById('pinError').textContent = "Code incorrect";
+      setTimeout(() => {
+        screen.classList.remove('shake');
+        pinEntry = "";
+        renderPinDots();
+      }, 400);
+    }
+  }
+}
+
+document.getElementById('powerBtn').addEventListener('click', () => {
+  if(phoneUnlocked) return;
+  if(document.getElementById('lockScreen').classList.contains('show')) return;
+  const boot = document.getElementById('bootLogo');
+  boot.classList.add('show');
+  setTimeout(() => {
+    boot.classList.remove('show');
+    document.getElementById('lockScreen').classList.add('show');
+  }, 1600);
+});
+
+document.getElementById('bypassZone').addEventListener('click', () => {
+  bypassClicks++;
+  if(bypassClicks >= BYPASS_CLICKS_NEEDED){
+    unlockPhone();
+  }
+});
+
+function unlockPhone(){
+  phoneUnlocked = true;
+  document.getElementById('lockScreen').classList.remove('show');
+  document.getElementById('unlockedScreen').classList.add('show');
+  document.getElementById('appLogoText').textContent = APP_NAME;
+
+  const slot = document.getElementById('selfieSlot');
+  const testImg = new Image();
+  testImg.onload = () => { slot.innerHTML = ""; slot.appendChild(testImg); };
+  testImg.onerror = () => {};
+  testImg.src = "selfie.jpg";
+
+  document.getElementById('qrUrlText').textContent = APP_URL;
+  document.getElementById('qrcode').innerHTML = "";
+  if(window.QRCode){
+    new QRCode(document.getElementById('qrcode'), { text: APP_URL, width:110, height:110 });
+  }
+}
+
+function resetPhone(){
+  pinEntry = "";
+  bypassClicks = 0;
+  phoneUnlocked = false;
+  document.getElementById('bootLogo').classList.remove('show');
+  document.getElementById('lockScreen').classList.remove('show');
+  document.getElementById('unlockedScreen').classList.remove('show');
+  document.getElementById('pinError').textContent = "";
+  renderPinDots();
+}
+</script>
+</body>
+</html>
