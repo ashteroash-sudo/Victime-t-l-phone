@@ -27,10 +27,22 @@ body{
   text-align:center;
 }
 
+#fsStage:fullscreen{
+  width:100vw;
+  height:100vh;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 .phone-wrap{
   position:relative;
   width: min(90vw, calc(88vh * 0.6667));
   max-width:620px;
+}
+#fsStage:fullscreen .phone-wrap{
+  width: min(96vw, calc(96vh * 0.6667));
+  max-width:none;
 }
 .phone-wrap img{
   display:block;
@@ -38,19 +50,6 @@ body{
   height:auto;
   user-select:none;
   -webkit-user-drag:none;
-}
-.phone-wrap:fullscreen{
-  width:auto;
-  height:100vh;
-  max-width:none;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.phone-wrap:fullscreen img{
-  width:auto;
-  height:100%;
 }
 
 .power-hit{
@@ -65,8 +64,8 @@ body{
 .screen{
   position:absolute;
   left:22.3%;
-  top:12.7%;
-  width:54.7%;
+  top:11.8%;
+  width:55.9%;
   height:65.1%;
   border-radius:6% / 3%;
   overflow:hidden;
@@ -156,22 +155,23 @@ body{
 .unlocked-screen.show{ display:block; }
 .app-logo{
   text-align:center;
-  font-size: calc(var(--su) * 14);
+  font-size: calc(var(--su) * 10);
   font-weight:800;
-  letter-spacing:0.02em;
+  letter-spacing:0.01em;
   background:linear-gradient(90deg,#ff5f7e,#8b5cf6);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
   margin-bottom: calc(var(--su) * 1);
+  white-space:nowrap;
 }
-.app-sub{ text-align:center; font-size: calc(var(--su) * 3.4); color:#999; margin-bottom: calc(var(--su) * 6); }
+.app-sub{ text-align:center; font-size: calc(var(--su) * 2.8); color:#999; margin-bottom: calc(var(--su) * 6); }
 .chat-thread{ display:flex; flex-direction:column; gap: calc(var(--su) * 3); margin-bottom: calc(var(--su) * 6); }
 .bubble{
   max-width:78%;
   padding: calc(var(--su) * 2.6) calc(var(--su) * 3.6);
   border-radius: calc(var(--su) * 4);
-  font-size: calc(var(--su) * 3.6);
+  font-size: calc(var(--su) * 3);
   line-height:1.4;
 }
 .bubble.them{ background:#2a2c2e; color:#eee; align-self:flex-start; border-bottom-left-radius:3px; }
@@ -355,6 +355,7 @@ document.getElementById('bypassZone').addEventListener('click', () => {
 
 function unlockPhone(){
   phoneUnlocked = true;
+  updateScale();
   document.getElementById('lockScreen').classList.remove('show');
   document.getElementById('unlockedScreen').classList.add('show');
   document.getElementById('appLogoText').textContent = APP_NAME;
