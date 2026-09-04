@@ -27,22 +27,10 @@ body{
   text-align:center;
 }
 
-#fsStage:fullscreen{
-  width:100vw;
-  height:100vh;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
 .phone-wrap{
   position:relative;
   width: min(90vw, calc(88vh * 0.6667));
   max-width:620px;
-}
-#fsStage:fullscreen .phone-wrap{
-  width: min(96vw, calc(96vh * 0.6667));
-  max-width:none;
 }
 .phone-wrap img{
   display:block;
@@ -63,9 +51,9 @@ body{
 
 .screen{
   position:absolute;
-  left:22.3%;
+  left:22.0%;
   top:11.8%;
-  width:55.9%;
+  width:56.6%;
   height:65.1%;
   border-radius:6% / 3%;
   overflow:hidden;
@@ -165,7 +153,21 @@ body{
   margin-bottom: calc(var(--su) * 1);
   white-space:nowrap;
 }
+.account-tag{
+  text-align:center;
+  font-size: calc(var(--su) * 2.3);
+  color:#666;
+  letter-spacing:0.03em;
+  margin-bottom: calc(var(--su) * 3);
+}
 .app-sub{ text-align:center; font-size: calc(var(--su) * 2.8); color:#999; margin-bottom: calc(var(--su) * 6); }
+.contact-name{
+  text-align:center;
+  font-size: calc(var(--su) * 4.2);
+  font-weight:600;
+  color:#eee;
+  margin-bottom: calc(var(--su) * 0.5);
+}
 .chat-thread{ display:flex; flex-direction:column; gap: calc(var(--su) * 3); margin-bottom: calc(var(--su) * 6); }
 .bubble{
   max-width:78%;
@@ -240,7 +242,9 @@ body{
     </div>
 
     <div class="unlocked-screen" id="unlockedScreen">
+      <div class="account-tag" id="accountTag">Connecté : Lauren_alone</div>
       <div class="app-logo" id="appLogoText">Nocturne</div>
+      <div class="contact-name" id="contactName">La Suceuse</div>
       <div class="app-sub">Conversation — il y a 2 jours</div>
       <div class="chat-thread">
         <div class="bubble them">J'ai consulté ton profil, tu me plais.</div>
@@ -261,7 +265,6 @@ body{
 </div>
 
 <div class="controls">
-  <button class="ctrl-btn" id="fsBtn">Plein écran</button>
   <button class="ctrl-btn" onclick="resetPhone()">Réinitialiser le téléphone</button>
 </div>
 
@@ -269,6 +272,8 @@ body{
 const PHONE_PIN = "1957";
 const BYPASS_CLICKS_NEEDED = 3;
 const APP_NAME = "Nocturne";
+const CONTACT_NAME = "La Suceuse";     // pseudo du vampire sur l'appli — à retrouver dans les profils
+const ACCOUNT_NAME = "Lauren_alone";   // pseudo de la victime, propriétaire du téléphone
 const APP_URL = "https://nocturne-app.vercel.app";
 
 let pinEntry = "";
@@ -285,7 +290,6 @@ function updateScale(){
   }
 }
 window.addEventListener('resize', updateScale);
-document.addEventListener('fullscreenchange', () => setTimeout(updateScale, 50));
 window.addEventListener('load', updateScale);
 updateScale();
 
@@ -359,6 +363,8 @@ function unlockPhone(){
   document.getElementById('lockScreen').classList.remove('show');
   document.getElementById('unlockedScreen').classList.add('show');
   document.getElementById('appLogoText').textContent = APP_NAME;
+  document.getElementById('contactName').textContent = CONTACT_NAME;
+  document.getElementById('accountTag').textContent = "Connecté : " + ACCOUNT_NAME;
 
   const slot = document.getElementById('selfieSlot');
   const testImg = new Image();
@@ -384,13 +390,6 @@ function resetPhone(){
   renderPinDots();
 }
 
-document.getElementById('fsBtn').addEventListener('click', () => {
-  if(!document.fullscreenElement){
-    phoneWrap.requestFullscreen().catch(() => {});
-  } else {
-    document.exitFullscreen();
-  }
-});
 </script>
 </body>
 </html>
